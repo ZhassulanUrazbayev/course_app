@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:kak_kaspi_app/screens/pin_create_page.dart';
 import 'package:kak_kaspi_app/utils/phoneNumberFormatter.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -25,14 +26,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
         backgroundColor: Theme.of(context).accentColor,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          iconSize: 28.0,
+          iconSize: 24.0,
           color: Theme.of(context).primaryColor,
           onPressed: () {},
         ),
         title: Text(
           'Вход/Регистрация',
           style: TextStyle(
-              color: Colors.black, fontSize: 24.0, fontWeight: FontWeight.w600),
+              color: Colors.black, fontSize: 20.0, fontWeight: FontWeight.w500),
         ),
         elevation: 0.8,
       ),
@@ -68,15 +69,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
               padding: EdgeInsets.all(8.0),
               child: RaisedButton(
                 onPressed: () {
-                  _phoneNumber = _controller.text.substring(1, 4) +
-                      _controller.text.substring(6, 9) +
-                      _controller.text.substring(10, 12) +
-                      _controller.text.substring(13, 15);
+                  if (_controller.text.length >= 15) {
+                    _phoneNumber = _controller.text.substring(1, 4) +
+                        _controller.text.substring(6, 9) +
+                        _controller.text.substring(10, 12) +
+                        _controller.text.substring(13, 15);
+                  }
 
                   print(_passwordController.text);
+
                   if (_phoneNumber == "7474563370" ||
                       _passwordController.text == "1") {
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CreatePinPage(),
+                      ),
+                    );
                   } else if (_controller.text.isEmpty ||
                       _passwordController.text.isEmpty) {
                     showDialog(
