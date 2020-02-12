@@ -1,28 +1,105 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kak_kaspi_app/screens/biometric_auth_request.dart';
+import 'package:kak_kaspi_app/screens/home_page.dart';
 import 'package:kak_kaspi_app/utils/preferences.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 
-class Otp extends StatefulWidget {
-  final String email;
+class CheckPin extends StatefulWidget {
+  final bool isAcceptedBiometricAuth;
   final String newEmail;
   final bool isGuestCheckOut;
 
-  const Otp({
+  const CheckPin({
     Key key,
-    @required this.email,
+    @required this.isAcceptedBiometricAuth,
     this.newEmail = "",
     this.isGuestCheckOut,
   }) : super(key: key);
 
   @override
-  _OtpState createState() => new _OtpState();
+  _CheckPin createState() => new _CheckPin();
 }
 
-class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
+class _CheckPin extends State<CheckPin> with SingleTickerProviderStateMixin {
+  final LocalAuthentication _localAuthentication = LocalAuthentication();
+
+// To check if any type of biometric authentication
+// hardware is available.
+  Future<bool> _isBiometricAvailable() async {
+    bool isAvailable = false;
+    try {
+      isAvailable = await _localAuthentication.canCheckBiometrics;
+    } on PlatformException catch (e) {
+      print(e);
+    }
+
+    if (!mounted) return isAvailable;
+
+    isAvailable
+        ? print('Biometric is available!')
+        : print('Biometric is unavailable.');
+
+    return isAvailable;
+  }
+
+// To retrieve the list of biometric types
+// (if available).
+  Future<void> _getListOfBiometricTypes() async {
+    List<BiometricType> listOfBiometrics;
+    try {
+      listOfBiometrics = await _localAuthentication.getAvailableBiometrics();
+    } on PlatformException catch (e) {
+      print(e);
+    }
+
+    if (!mounted) return;
+
+    print(listOfBiometrics);
+  }
+
+// Process of authentication user using
+// biometrics.
+  Future<bool> _authenticateUser() async {
+    bool isAuthenticated = false;
+    try {
+      isAuthenticated = await _localAuthentication.authenticateWithBiometrics(
+        localizedReason:
+            "Please authenticate to view your transaction overview",
+        useErrorDialogs: true,
+        stickyAuth: true,
+      );
+    } on PlatformException catch (e) {
+      print(e);
+    }
+
+    if (!mounted) return isAuthenticated;
+
+    isAuthenticated
+        ? print('User is authenticated!')
+        : print('User is not authenticated.');
+
+    return isAuthenticated;
+  }
+
+  Future<void> isUserAuthenticated() async {
+    if (await _isBiometricAvailable()) {
+      await _getListOfBiometricTypes();
+      if(await _authenticateUser()){
+        Route route = MaterialPageRoute(builder: (context) => HomePage());
+        Navigator.pushReplacement(context, route);
+//          Navigator.of(context).push(
+//            MaterialPageRoute(
+//              builder: (context) => HomePage(),
+//            ),
+//          );
+      }
+    }
+  }
+
   // Constants
   final int time = 30;
   AnimationController _controller;
@@ -42,16 +119,30 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
   String userName = "";
   bool didReadNotifications = false;
   int unReadNotificationsCount = 0;
-  bool isFilled = false;
   var _oldPin = '';
 
-  // Return "Email" label
-  Widget _getEmailLabel(String text) {
+  // Return "Welcome" label
+  Widget _getWelcomeLabel(String text) {
     return Padding(
       padding: EdgeInsets.only(top: 80.0),
       child: new Text(
         text,
         textAlign: TextAlign.center,
+        maxLines: 2,
+        style: new TextStyle(
+            fontSize: 18.0, color: Colors.black, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+//  Return label
+  Widget _getLabel(String text) {
+    return Padding(
+      padding: EdgeInsets.only(top: 80.0),
+      child: new Text(
+        text,
+        textAlign: TextAlign.center,
+        maxLines: 2,
         style: new TextStyle(
             fontSize: 18.0, color: Colors.black, fontWeight: FontWeight.w600),
       ),
@@ -71,31 +162,18 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
     );
   }
 
-  // Return "OTP" filled input field to confirm
-  get _getFilledInputField {
-    return new Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        _otpTextFilled(),
-        _otpTextFilled(),
-        _otpTextFilled(),
-        _otpTextFilled(),
-      ],
-    );
-  }
-
   // Returns "OTP" input part
   get _getInputPart {
+    if (widget.isAcceptedBiometricAuth) {
+      isUserAuthenticated();
+    }
     return new Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        isFilled
-            ? _getEmailLabel("Повторите код доступа")
-            : _getEmailLabel("Придумайте код доступа"),
-        isFilled ? _getFilledInputField : Text(''),
+        _getWelcomeLabel("Name, Здравствуйте!"),
         _getInputField,
-//        _hideResendButton ? _getTimerText : _getResendButton,
+        _getLabel("Введите код для быстрого доступа к приложению"),
         _getOtpKeyboard
       ],
     );
@@ -224,6 +302,7 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
                   new SizedBox(
                     width: 70.0,
                   ),
+                  _biometricAuthButton(onPressed: () {}),
                   _otpKeyboardInputButton(
                       label: "0",
                       onPressed: () {
@@ -363,6 +442,32 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
     );
   }
 
+  // Returns "Otp keyboard input Button"
+  Widget _biometricAuthButton({VoidCallback onPressed}) {
+    return new Material(
+      borderRadius: BorderRadius.circular(45.0),
+      color: Colors.black12,
+      child: new InkWell(
+        highlightColor: Colors.red,
+        onTap: onPressed,
+        borderRadius: new BorderRadius.circular(45.0),
+        child: new Container(
+          height: 70.0,
+          width: 70.0,
+          decoration: new BoxDecoration(
+            shape: BoxShape.circle,
+          ),
+          child: new Center(
+            child: Icon(
+              Icons.fingerprint,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // Returns "Otp keyboard action Button"
   _otpKeyboardActionButton({Widget label, VoidCallback onPressed}) {
     return Material(
@@ -405,14 +510,11 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
             _fourthDigit.toString();
 
 //        normal checking needed
-        if (currentPin.length == 4 && !isFilled) {
-          isFilled = true;
+        if (currentPin.length == 4) {
           _oldPin = currentPin;
-          addStringValueSP('pin', _oldPin);
           currentPin = '';
           clearOtp();
-        } else if (_oldPin == currentPin) {
-          isFilled = false;
+        } else if (getStringValueSP('pin') == currentPin) {
           Navigator.push(
             context,
             MaterialPageRoute(

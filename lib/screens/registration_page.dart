@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:kak_kaspi_app/screens/pin_create_page.dart';
-import 'package:kak_kaspi_app/utils/phoneNumberFormatter.dart';
+import 'package:kak_kaspi_app/widgets/empty_fields_dialog.dart';
+import 'package:kak_kaspi_app/widgets/error_fields_dialog.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -78,7 +79,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   print(_passwordController.text);
 
-                  if (_phoneNumber == "7474563370" ||
+                  if (_phoneNumber == "7474563370" &&
                       _passwordController.text == "1") {
                     Navigator.push(
                       context,
@@ -90,49 +91,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       _passwordController.text.isEmpty) {
                     showDialog(
                         context: context,
-                        builder: (_) => CupertinoAlertDialog(
-                              content: Text(
-                                  "Пожалуйста,введите номер телефона или пароль"),
-                              actions: <Widget>[
-                                CupertinoDialogAction(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Yes'),
-                                )
-                              ],
-                            ),
+                        builder: (_) => ShowDialogEmptyFields(),
                         barrierDismissible: true);
                   } else {
                     showDialog(
                         context: context,
-                        builder: (_) => CupertinoAlertDialog(
-                              content: Text(
-                                  "Неправильный номер телефона или пароль"),
-                              actions: <Widget>[
-                                CupertinoDialogAction(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Забыли пароль ?'),
-                                ),
-                                CupertinoDialogAction(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Ввести занова'),
-                                )
-                              ],
-                            ),
+                        builder: (_) => ShowDialogErrorFields(),
                         barrierDismissible: true);
                   }
                 },
                 color: Colors.blue,
-                child: Text('Войти',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white,
-                        fontSize: 16.0)),
+                child: Text(
+                  'Войти',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                      fontSize: 16.0),
+                ),
               ),
             )
           ],
