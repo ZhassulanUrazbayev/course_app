@@ -46,21 +46,6 @@ class _CheckPin extends State<CheckPin> with SingleTickerProviderStateMixin {
     return isAvailable;
   }
 
-// To retrieve the list of biometric types
-// (if available).
-  Future<void> _getListOfBiometricTypes() async {
-    List<BiometricType> listOfBiometrics;
-    try {
-      listOfBiometrics = await _localAuthentication.getAvailableBiometrics();
-    } on PlatformException catch (e) {
-      print(e);
-    }
-
-    if (!mounted) return;
-
-    print(listOfBiometrics);
-  }
-
 // Process of authentication user using
 // biometrics.
   Future<bool> _authenticateUser() async {
@@ -87,7 +72,6 @@ class _CheckPin extends State<CheckPin> with SingleTickerProviderStateMixin {
 
   Future<void> isUserAuthenticated() async {
     if (await _isBiometricAvailable()) {
-      await _getListOfBiometricTypes();
       if(await _authenticateUser()){
         Route route = MaterialPageRoute(builder: (context) => HomePage());
         Navigator.pushReplacement(context, route);

@@ -7,6 +7,8 @@ import 'package:kak_kaspi_app/widgets/empty_fields_dialog.dart';
 import 'package:kak_kaspi_app/widgets/error_fields_dialog.dart';
 
 class RegistrationPage extends StatefulWidget {
+  static const String routeName = '/registration';
+
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
 }
