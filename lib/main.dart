@@ -3,7 +3,9 @@ import 'package:kak_kaspi_app/routes/routes.dart';
 import 'package:kak_kaspi_app/screens/profile_page.dart';
 import 'package:kak_kaspi_app/screens/registration_page.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -23,4 +25,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

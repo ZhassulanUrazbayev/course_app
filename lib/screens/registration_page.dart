@@ -1,8 +1,10 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:kak_kaspi_app/screens/pin_create_page.dart';
+import 'package:kak_kaspi_app/utils/connection_status.dart';
 import 'package:kak_kaspi_app/widgets/empty_fields_dialog.dart';
 import 'package:kak_kaspi_app/widgets/error_fields_dialog.dart';
 
@@ -20,11 +22,43 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   var _phoneNumber = '';
 
+  @override
+  void dispose() {
+    _connectivity.disposeStream();
+    super.dispose();
+  }
+
+  Map _source = {ConnectivityResult.none: false};
+  MyConnectivity _connectivity = MyConnectivity.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _connectivity.initialise();
+    _connectivity.myStream.listen((source) {
+      setState(() => _source = source);
+    });
+  }
+
 //  final _mobileFormatter = NumberTextInputFormatter();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    bool isOffline = false;
+
+    switch (_source.keys.toList()[0]) {
+      case ConnectivityResult.none:
+        isOffline = true;
+        break;
+      case ConnectivityResult.mobile:
+        isOffline = false;
+        break;
+      case ConnectivityResult.wifi:
+        isOffline = false;
+        break;
+    }
+
+    return isOffline ? Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).accentColor,
         leading: IconButton(
@@ -41,31 +75,53 @@ class _RegistrationPageState extends State<RegistrationPage> {
         elevation: 0.8,
       ),
       body: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.symmetric(vertical: 15.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            TextField(
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.next,
-              controller: _controller,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                labelText: 'Мобильный номер',
-                prefixText: '+7 ',
-                prefixStyle: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.black,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Colors.black12),
+                )
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    labelText: 'Мобильный номер',
+                    prefixText: '+7 ',
+                    prefixStyle: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.black,
+                    ),
+                  ),
                 ),
               ),
             ),
-            TextField(
-              obscureText: true,
-              controller: _passwordController,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                labelText: 'Пароль',
+            Container(
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.black12),
+                  )
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15.0),
+                child: TextField(
+                  obscureText: true,
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    labelText: 'Пароль',
+                  ),
+                ),
               ),
             ),
             Padding(
@@ -115,6 +171,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ],
         ),
       ),
+    ) : Scaffold(
+      backgroundColor: Colors.blue,
     );
   }
 }
