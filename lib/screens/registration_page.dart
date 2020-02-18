@@ -58,7 +58,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         break;
     }
 
-    return isOffline ? Scaffold(
+    return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).accentColor,
         leading: IconButton(
@@ -171,8 +171,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ],
         ),
       ),
-    ) : Scaffold(
-      backgroundColor: Colors.blue,
     );
   }
 }

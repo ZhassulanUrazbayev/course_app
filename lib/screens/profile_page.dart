@@ -146,7 +146,7 @@ class ProfilePage extends StatelessWidget {
                     backgroundColor: Colors.red,
                     child: Center(
                       child: Icon(
-                        Icons.camera,
+                        Icons.camera_alt,
                         size: 20.0,
                         color: Colors.white,
                       ),
